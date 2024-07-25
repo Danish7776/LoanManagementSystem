@@ -15,13 +15,13 @@ class UserController extends Controller
     {
         try {
             $req->validate([
-                'email' => 'required|email',
+                'username' => 'required',
                 'password' => 'required'
             ]);
 
-            $user = User::where('email', $req->email)->first();
+            $user = User::where('username', $req->username)->first();
             if ($user && Hash::check($req->password, $user->password)) {
-                $token = $user->createToken($req->email)->plainTextToken;
+                $token = $user->createToken($req->username)->plainTextToken;
                 session(['token' => $token]);
                 Auth::login($user);
 
@@ -31,7 +31,7 @@ class UserController extends Controller
             return back()->withErrors(['credentials' => 'The provided credentials are incorrect.']);
 
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'An error occurred during login. Please try again later.']);
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
 
@@ -41,13 +41,13 @@ class UserController extends Controller
         try {
             $req->validate([
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users',
+                'username' => 'required|email|unique:users',
                 'password' => 'required|string|min:8'
             ]);
 
             $user = User::create([
                 'name' => $req->name,
-                'email' => $req->email,
+                'username' => $req->email,
                 'password' => Hash::make($req->password)
             ]);
 
